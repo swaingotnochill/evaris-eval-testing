@@ -1,8 +1,8 @@
 name: Eval smoke
 
 # Runs the LangChain support agent under Inspect, then publishes the .eval
-# artifact to Evaris with a personal access token — the same user flow a CI
-# runner would use against production.
+# artifact to Evaris with the `evaris` CLI and a personal access token — the
+# same user flow a customer's CI runner uses against production.
 on:
   workflow_dispatch:
   schedule:
@@ -54,4 +54,4 @@ jobs:
             echo "Set repo vars EVARIS_API_URL, EVARIS_PROJECT_ID and secret EVARIS_API_TOKEN (see README)." >&2
             exit 1
           fi
-          node publish/publish.mjs logs/ --name "eval-smoke-${{ github.run_number }}" --project "$EVARIS_PROJECT_ID"
+          npx --yes evaris@latest publish logs/ --name "eval-smoke-${{ github.run_number }}"

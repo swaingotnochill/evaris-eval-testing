@@ -43,8 +43,9 @@ run list) works end to end.
   policy, refund, and escalation tools.
 - `evals/` — Inspect task + 5-sample dataset.
 - `scripts/run-eval.sh` — runs `inspect eval`, leaves logs in `logs/`.
-- `publish/publish.mjs` — dependency-free publisher (create run → upload
-  artifact → complete → poll ingest), mirroring the Evaris SDK's publish flow.
+- Publishes with the [`evaris`](https://www.npmjs.com/package/evaris) CLI
+  (`npx evaris publish`), which handles create-run → artifact upload →
+  complete → ingest-wait. That package is the same one Evaris users install.
 - `.github/workflows/eval.yml` — manual + weekly scheduled run.
 
 ## Local run
@@ -62,14 +63,12 @@ EVARIS_PROJECT_ID=proj_...
 EOF
 
 bash scripts/run-eval.sh
-node publish/publish.mjs logs/
+npx evaris publish logs/
 ```
 
-## Why a standalone publisher (not the Evaris SDK)?
+## The `evaris` package
 
-The Evaris TypeScript SDK (`sdk/typescript` in the backend repo) is not
-published to npm yet — it is only consumable inside the monorepo. Until it is
-(add a `package.json` + publish workflow there, then swap this script for
-`pnpm inspect:publish`), this repo publishes with plain `fetch` against the
-same OpenAPI-documented endpoints, so the smoke test needs nothing installed
-and still exercises the identical wire contract.
+Publishing uses the public `evaris` npm package (CLI + TypeScript SDK, built
+from `sdk/typescript` in the backend repo). Before the first workflow run,
+publish it once from the backend repo: add an `NPM_TOKEN` secret with publish
+rights, then push a `sdk-v0.1.0` tag (or run the "Publish SDK" workflow).
