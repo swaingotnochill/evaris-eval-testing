@@ -24,11 +24,16 @@ Inspect eval (2 questions, real model API) → evaris publish (PAT) → Evaris r
 
 ## Layout
 
-- `evals/evals.py` — the whole eval: two `Sample`s, default solver (one real
-  model call each), `includes()` scoring. No agent, no dataset file.
+- `evals/support_refund_smoke.py` — the real eval (default): LangChain
+  support agent with order/policy/refund/escalation tools over 5 refund
+  questions, scored by a model-based judge.
+- `evals/smoke.py` — cheap pipeline check (two questions, substring
+  scoring); run with `INSPECT_EVAL_FILE=smoke.py`.
+- `agents/support_agent.py` — the LangChain agent under test.
 - `scripts/run-eval.sh` — `inspect eval ...`, logs to `logs/`.
 - `.github/workflows/eval.yml` — weekly cron + manual dispatch; publishes
-  with `npx evaris@latest publish logs/` (the public `evaris` npm package).
+  with `npx evaris@latest publish logs/` (the public `evaris` npm package,
+  always resolved fresh from the registry).
 
 ## Local run
 

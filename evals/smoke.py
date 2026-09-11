@@ -1,7 +1,4 @@
-"""Minimal real eval: two questions, real model calls, substring scoring.
-
-Kept deliberately tiny — this repo exists to exercise the Evaris user flow
-(run eval → publish with `evaris`), not to be an interesting benchmark.
+"""Cheap pipeline check: two questions, real model calls, substring scoring.
 """
 from inspect_ai import Task, task
 from inspect_ai.dataset import Sample
