@@ -19,9 +19,8 @@ run list) works end to end.
    (see `deploy-worker.yml` / `db-*-migrate.yml` in the backend repo).
 2. **Create a personal access token**: sign in to the Evaris web app →
    Settings → API Tokens → Create token (e.g. `gha-eval-smoke`).
-3. **Find your project id**: with the web app open on the runs page, look at
-   the network tab for the `/v1/setup/bootstrap` response — the value of
-   `project.public_id` (looks like `proj_...`).
+3. **Find your project id**: in the web app, Settings → API Tokens → copy
+   the project id (looks like `proj_...`).
 4. **Configure this repo** on GitHub:
 
    | Where | Name | Value |
