@@ -1,73 +1,44 @@
-# evaris-eval-smoke
+# evaris-eval-testing
 
-Production smoke test for the Evaris user flow:
+Smoke test for the Evaris user flow, kept as simple as possible:
 
 ```text
-LangChain agent → Inspect eval → .eval artifact → publish with a PAT → Evaris ingest → runs UI
+Inspect eval (2 questions, real model API) → evaris publish (PAT) → Evaris runs UI
 ```
-
-This repo runs the support-refund smoke eval (a LangChain tool-calling agent
-scored by `model_graded_qa`) in GitHub Actions and publishes the resulting
-`.eval` log to a real Evaris deployment using a personal access token — the
-exact flow a customer's CI runner would use. If the workflow is green, the
-whole publish path (auth → project access → artifact upload → queue ingest →
-run list) works end to end.
 
 ## One-time setup
 
-1. **Deploy Evaris** and make sure migrations have run for that environment
-   (see `deploy-worker.yml` / `db-*-migrate.yml` in the backend repo).
-2. **Create a personal access token**: sign in to the Evaris web app →
-   Settings → API Tokens → Create token (e.g. `gha-eval-smoke`).
-3. **Find your project id**: in the web app, Settings → API Tokens → copy
-   the project id (looks like `proj_...`).
-4. **Configure this repo** on GitHub:
+1. A running Evaris deployment (e.g. production). In its web app: Settings →
+   API Tokens → create a token, and copy the project id shown on the same page.
+2. Push this repo to GitHub, then from the repo root:
 
-   | Where | Name | Value |
-   |---|---|---|
-   | Secret | `EVARIS_API_TOKEN` | the PAT from step 2 |
-   | Secret | `ZAI_API_KEY` | model API key (Z.ai) |
-   | Variable | `EVARIS_API_URL` | e.g. `https://evaris-api-prod.<account>.workers.dev` |
-   | Variable | `EVARIS_PROJECT_ID` | `proj_...` from step 3 |
-   | Variable (optional) | `INSPECT_EVAL_MODEL` | default `openai-api/zai/glm-4.5` |
-   | Variable (optional) | `LANGCHAIN_AGENT_MODEL` | default `glm-4.5` |
-   | Variable (optional) | `OPENAI_BASE_URL` | default `https://api.z.ai/api/paas/v4` |
+   ```bash
+   gh secret set ZAI_API_KEY          # model API key (Z.ai)
+   gh secret set EVARIS_API_TOKEN     # personal access token from the web app
+   gh variable set EVARIS_API_URL --body "https://<your-evaris-api-origin>"
+   gh variable set EVARIS_PROJECT_ID --body "proj_..."
+   ```
 
-5. Push this repo, then run **Actions → Eval smoke → Run workflow**. The
-   published run should appear in the runs list within a minute or two.
+3. Actions → **Eval smoke** → Run workflow. The run appears in the Evaris
+   runs list within a minute or two, with 2 scored samples.
 
 ## Layout
 
-- `agents/support_agent.py` — LangChain support-refund agent with order,
-  policy, refund, and escalation tools.
-- `evals/` — Inspect task + 5-sample dataset.
-- `scripts/run-eval.sh` — runs `inspect eval`, leaves logs in `logs/`.
-- Publishes with the [`evaris`](https://www.npmjs.com/package/evaris) CLI
-  (`npx evaris publish`), which handles create-run → artifact upload →
-  complete → ingest-wait. That package is the same one Evaris users install.
-- `.github/workflows/eval.yml` — manual + weekly scheduled run.
+- `evals/evals.py` — the whole eval: two `Sample`s, default solver (one real
+  model call each), `includes()` scoring. No agent, no dataset file.
+- `scripts/run-eval.sh` — `inspect eval ...`, logs to `logs/`.
+- `.github/workflows/eval.yml` — weekly cron + manual dispatch; publishes
+  with `npx evaris@latest publish logs/` (the public `evaris` npm package).
 
 ## Local run
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-cat > .env <<'EOF'
-ZAI_API_KEY=...
-OPENAI_BASE_URL=https://api.z.ai/api/paas/v4
-EVARIS_API_URL=https://<your-deployment>
-EVARIS_API_TOKEN=eva_...
-EVARIS_PROJECT_ID=proj_...
-EOF
-
+export ZAI_API_KEY=...
 bash scripts/run-eval.sh
-npx evaris publish logs/
+npx evaris@latest publish logs/
 ```
 
-## The `evaris` package
-
-Publishing uses the public `evaris` npm package (CLI + TypeScript SDK, built
-from `sdk/typescript` in the backend repo). Before the first workflow run,
-publish it once from the backend repo: add an `NPM_TOKEN` secret with publish
-rights, then push a `sdk-v0.1.0` tag (or run the "Publish SDK" workflow).
+(`evaris` reads `EVARIS_API_URL`, `EVARIS_API_TOKEN`, `EVARIS_PROJECT_ID`
+from the environment; `publish --help` for flags.)

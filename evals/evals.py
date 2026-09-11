@@ -1,33 +1,19 @@
-from __future__ import annotations
+"""Minimal real eval: two questions, real model calls, substring scoring.
 
-from pathlib import Path
-
+Kept deliberately tiny — this repo exists to exercise the Evaris user flow
+(run eval → publish with `evaris`), not to be an interesting benchmark.
+"""
 from inspect_ai import Task, task
-from inspect_ai.dataset import json_dataset
-from inspect_ai.model import ModelOutput
-from inspect_ai.scorer import model_graded_qa
-from inspect_ai.solver import TaskState, Generate, solver
-
-from agents.support_agent import run_agent
-
-SAMPLES_PATH = Path(__file__).with_name("samples.jsonl")
-
-
-@solver
-def langchain_agent_solver():
-    async def solve(state: TaskState, generate: Generate) -> TaskState:
-        del generate
-        answer = run_agent(str(state.input))
-        state.output = ModelOutput.from_content(model="langchain-agent", content=answer)
-        return state
-
-    return solve
+from inspect_ai.dataset import Sample
+from inspect_ai.scorer import includes
 
 
 @task
-def support_refund_smoke():
+def smoke():
     return Task(
-        dataset=json_dataset(str(SAMPLES_PATH)),
-        solver=langchain_agent_solver(),
-        scorer=model_graded_qa(),
+        dataset=[
+            Sample(input="What is 2+2? Answer with just the number.", target="4"),
+            Sample(input="What is the capital of France? One word only.", target="Paris"),
+        ],
+        scorer=includes(),
     )
