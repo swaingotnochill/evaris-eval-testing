@@ -1,0 +1,57 @@
+name: Eval smoke
+
+# Runs the LangChain support agent under Inspect, then publishes the .eval
+# artifact to Evaris with a personal access token — the same user flow a CI
+# runner would use against production.
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly smoke (Mondays 06:00 UTC) to keep the production flow verified.
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: eval-smoke
+  cancel-in-progress: false
+
+jobs:
+  eval-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install eval dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Inspect eval
+        env:
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || 'https://api.z.ai/api/paas/v4' }}
+          INSPECT_EVAL_MODEL: ${{ vars.INSPECT_EVAL_MODEL || 'openai-api/zai/glm-4.5' }}
+          LANGCHAIN_AGENT_MODEL: ${{ vars.LANGCHAIN_AGENT_MODEL || 'glm-4.5' }}
+        run: bash scripts/run-eval.sh
+
+      - name: Upload eval logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-logs
+          path: logs/
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Publish to Evaris
+        env:
+          EVARIS_API_URL: ${{ vars.EVARIS_API_URL }}
+          EVARIS_API_TOKEN: ${{ secrets.EVARIS_API_TOKEN }}
+          EVARIS_PROJECT_ID: ${{ vars.EVARIS_PROJECT_ID }}
+        run: |
+          if [[ -z "$EVARIS_API_URL" || -z "$EVARIS_API_TOKEN" || -z "$EVARIS_PROJECT_ID" ]]; then
+            echo "Set repo vars EVARIS_API_URL, EVARIS_PROJECT_ID and secret EVARIS_API_TOKEN (see README)." >&2
+            exit 1
+          fi
+          node publish/publish.mjs logs/ --name "eval-smoke-${{ github.run_number }}" --project "$EVARIS_PROJECT_ID"
