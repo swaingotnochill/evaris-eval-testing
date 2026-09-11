@@ -15,8 +15,8 @@ Inspect eval (2 questions, real model API) → evaris publish (PAT) → Evaris r
    ```bash
    gh secret set ZAI_API_KEY          # model API key (Z.ai)
    gh secret set EVARIS_API_TOKEN     # personal access token from the web app
-   gh variable set EVARIS_API_URL --body "https://<your-evaris-api-origin>"
    gh variable set EVARIS_PROJECT_ID --body "proj_..."
+   # Optional, self-hosted only: gh variable set EVARIS_API_URL --body "https://<your-api-origin>"
    ```
 
 3. Actions → **Eval smoke** → Run workflow. The run appears in the Evaris

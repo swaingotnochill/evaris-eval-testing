@@ -40,12 +40,14 @@ jobs:
 
       - name: Publish to Evaris
         env:
+          # Optional: override for a self-hosted deployment. The evaris CLI
+          # defaults to the Evaris cloud API.
           EVARIS_API_URL: ${{ vars.EVARIS_API_URL }}
           EVARIS_API_TOKEN: ${{ secrets.EVARIS_API_TOKEN }}
           EVARIS_PROJECT_ID: ${{ vars.EVARIS_PROJECT_ID }}
         run: |
-          if [[ -z "$EVARIS_API_URL" || -z "$EVARIS_API_TOKEN" || -z "$EVARIS_PROJECT_ID" ]]; then
-            echo "Set vars EVARIS_API_URL, EVARIS_PROJECT_ID and secrets ZAI_API_KEY, EVARIS_API_TOKEN (see README)." >&2
+          if [[ -z "$EVARIS_API_TOKEN" || -z "$EVARIS_PROJECT_ID" ]]; then
+            echo "Set var EVARIS_PROJECT_ID and secrets ZAI_API_KEY, EVARIS_API_TOKEN (see README)." >&2
             exit 1
           fi
           npx --yes evaris@latest publish logs/ --name "eval-smoke-${{ github.run_number }}"
