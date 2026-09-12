@@ -1,5 +1,0 @@
-{"input":"Customer asks for a refund for order A100. What should we tell them?","target":"full refund"}
-{"input":"Customer wants refund for order B200 after trying the product. What is the decision?","target":"escalate"}
-{"input":"Customer asks to refund order C300 because it has not arrived. What should the agent do?","target":"tracking"}
-{"input":"Customer says order D400 is defective. What refund amount should be offered?","target":"129"}
-{"input":"Customer opened order E500 but wants a refund. What amount should be offered?","target":"30"}
