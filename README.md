@@ -1,49 +1,17 @@
-# evaris-eval-testing
+# evaris-eval-testing — skill-agent-test branch
 
-Smoke test for the Evaris user flow, kept as simple as possible:
+Clean slate for manually testing the **evaris-evals agent skill**: the evals,
+the run script, and the CI workflow have been removed on this branch. `main`
+still has the previous setup.
 
-```text
-Inspect eval (2 questions, real model API) → evaris publish (PAT) → Evaris runs UI
-```
+Kept on purpose:
 
-## One-time setup
-
-1. A running Evaris deployment (e.g. production). In its web app: Settings →
-   API Tokens → create a token, and copy the project id shown on the same page.
-2. Push this repo to GitHub, then from the repo root:
-
-   ```bash
-   gh secret set ZAI_API_KEY          # model API key (Z.ai)
-   gh secret set EVARIS_API_TOKEN     # personal access token from the web app
-   gh variable set EVARIS_PROJECT_ID --body "proj_..."
-   # Optional, self-hosted only: gh variable set EVARIS_API_URL --body "https://<your-api-origin>"
-   ```
-
-3. Actions → **Eval smoke** → Run workflow. The run appears in the Evaris
-   runs list within a minute or two, with 2 scored samples.
-
-## Layout
-
-- `evals/support_refund_smoke.py` — the real eval (default): LangChain
-  support agent with order/policy/refund/escalation tools over 5 refund
-  questions, scored by a model-based judge.
-- `evals/smoke.py` — cheap pipeline check (two questions, substring
-  scoring); run with `INSPECT_EVAL_FILE=smoke.py`.
 - `agents/support_agent.py` — the LangChain agent under test.
-- `scripts/run-eval.sh` — `inspect eval ...`, logs to `logs/`.
-- `.github/workflows/eval.yml` — weekly cron + manual dispatch; publishes
-  with `npx evaris@latest publish logs/` (the public `evaris` npm package,
-  always resolved fresh from the registry).
+- `requirements.txt` — its Python dependencies.
+- `.env` (gitignored) — local secrets (`EVARIS_API_TOKEN`,
+  `EVARIS_PROJECT_ID`, `ZAI_API_KEY`).
 
-## Local run
-
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export ZAI_API_KEY=...
-bash scripts/run-eval.sh
-npx evaris@latest publish logs/
-```
-
-(`evaris` reads `EVARIS_API_URL`, `EVARIS_API_TOKEN`, `EVARIS_PROJECT_ID`
-from the environment; `publish --help` for flags.)
+To test the skill here: install it with
+`npx skills add <skills-repo-owner>/<skills-repo>` (or from a local checkout),
+then ask your agent to set up inspect-ai evals for this repo, run a small
+sample locally, and publish the newest log to Evaris.

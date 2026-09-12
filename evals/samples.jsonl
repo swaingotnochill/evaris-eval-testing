@@ -1,5 +1,5 @@
-{"input":"Customer asks for a refund for order A100. What should we tell them?","target":"full refund"}
-{"input":"Customer wants refund for order B200 after trying the product. What is the decision?","target":"escalate"}
-{"input":"Customer asks to refund order C300 because it has not arrived. What should the agent do?","target":"tracking"}
-{"input":"Customer says order D400 is defective. What refund amount should be offered?","target":"129"}
-{"input":"Customer opened order E500 but wants a refund. What amount should be offered?","target":"30"}
+{"input": "Customer asks for a refund for order A100. What should we tell them?", "target": "Order A100 (noise-cancelling headphones, $199) is unopened and delivered 12 days ago, so it is eligible for a FULL refund of $199."}
+{"input": "Customer wants a refund for order B200 after trying the product for weeks. What is the decision?", "target": "Order B200 (standing desk mat) is used and delivered 45 days ago, so it is not eligible for a self-serve refund; the agent should escalate to human support (ticket id)."}
+{"input": "Customer asks to refund order C300 because it still has not arrived. What should the agent do?", "target": "Order C300 (USB-C hub) has not been delivered yet (in transit), so no refund is available; the agent should offer shipment tracking."}
+{"input": "Customer says order D400 arrived defective. What refund amount should be offered?", "target": "Order D400 (mechanical keyboard) is defective and delivered 8 days ago, so it is eligible for a FULL refund (or replacement) of $129."}
+{"input": "Customer opened order E500 and wants to return it. What refund amount should be offered?", "target": "Order E500 (ergonomic mouse, $59) is opened and delivered 20 days ago (within 30 days), so it is eligible for a PARTIAL refund of 50%, i.e. about $30."}
