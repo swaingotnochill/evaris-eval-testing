@@ -65,10 +65,15 @@ def langchain_agent_solver():
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         del generate
         messages = run_agent_messages(str(state.input))
-        state.messages.extend(replay_agent_trace(messages))
-        state.output = ModelOutput.from_content(
-            model="langchain-agent", content=final_agent_answer(messages)
-        )
+        answer = final_agent_answer(messages)
+        trace = replay_agent_trace(messages)
+        # The transcript must end with the exact answer being graded: when the
+        # agent's last AIMessage was empty, the graded answer is an earlier
+        # turn the replay already contains — don't duplicate it.
+        if answer and (not trace or str(trace[-1].content).strip() != answer):
+            trace.append(ChatMessageAssistant(content=answer))
+        state.messages.extend(trace)
+        state.output = ModelOutput.from_content(model="langchain-agent", content=answer)
         return state
 
     return solve
