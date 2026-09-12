@@ -29,7 +29,14 @@ export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
 mkdir -p "$LOG_DIR"
 
+# No TTY in CI: stream progress as log lines instead of the interactive view
+# (which just prints "Monitor from another shell" there).
+DISPLAY_ARGS=()
+if [[ ! -t 1 ]]; then
+  DISPLAY_ARGS=(--display log)
+fi
+
 # Z.ai is OpenAI chat-completions compatible only; inspect's newer OpenAI
 # provider would otherwise try the Responses API and 404.
 inspect eval "evals/$EVAL_FILE" --model "$MODEL" -M responses_api=false \
-  --log-dir "$LOG_DIR" --limit 5
+  "${DISPLAY_ARGS[@]}" --log-dir "$LOG_DIR" --limit 5
