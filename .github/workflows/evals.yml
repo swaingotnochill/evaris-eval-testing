@@ -1,0 +1,46 @@
+name: evals
+
+on:
+  pull_request:
+    paths:
+      - "evals/**"
+      - "agents/**"
+      - "scripts/run-evals.sh"
+      - ".github/workflows/evals.yml"
+  workflow_dispatch:
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install eval dependencies
+        run: uv sync
+
+      # The runner runs inspect AND publishes to Evaris whatever the outcome
+      # (success, failure, interrupt) — no separate publish step needed.
+      - name: Run evals and publish
+        run: bash scripts/run-evals.sh evals/support_refund.py
+        env:
+          EVARIS_API_TOKEN: ${{ secrets.EVARIS_API_TOKEN }}
+          EVARIS_PROJECT_ID: ${{ vars.EVARIS_PROJECT_ID }}
+          ZAI_API_KEY: ${{ secrets.ZAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || 'https://api.z.ai/api/paas/v4' }}
+          INSPECT_EVAL_MODEL: ${{ vars.INSPECT_EVAL_MODEL || 'openai/glm-4.5' }}
+          RUN_NAME: ci-${{ github.sha }}
+
+      - name: Upload eval logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-logs
+          path: logs/

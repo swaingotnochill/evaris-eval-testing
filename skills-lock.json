@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "skills": {
+    "evaris-evals": {
+      "source": "swaingotnochill/evaris",
+      "ref": "agent-skill",
+      "sourceType": "github",
+      "skillPath": "skills/evaris-evals/SKILL.md",
+      "computedHash": "81fb22604c52a6a39d3ac0945488f5894d78deb187a3126d956fc3d954d05a7a"
+    }
+  }
+}
