@@ -99,8 +99,39 @@ def create_support_agent():
     )
 
 
-def run_agent(question: str) -> str:
+def run_agent_messages(question: str) -> list:
+    """Run the agent and return every LangGraph message (full trace)."""
     agent = create_support_agent()
-    result = agent.invoke(
-        {"messages": [{"role": "user", "content": question}]})
-    return str(result["messages"][-1].content).strip()
+    result = agent.invoke({"messages": [{"role": "user", "content": question}]})
+    return result["messages"]
+
+
+def message_text(content) -> str:
+    """Plain text from a LangChain content field (str or content blocks)."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "\n".join(
+            block.get("text", "") for block in content if isinstance(block, dict)
+        ).strip()
+    return str(content)
+
+
+def final_agent_answer(messages: list) -> str:
+    """The last AIMessage that actually has text.
+
+    langgraph occasionally ends the loop with an empty AIMessage (or a
+    tool-only one), so blindly taking messages[-1] yields "" — which then
+    fails grading through no fault of the agent.
+    """
+    for message in reversed(messages):
+        if message.__class__.__name__ != "AIMessage":
+            continue
+        text = message_text(message.content).strip()
+        if text:
+            return text
+    return ""
+
+
+def run_agent(question: str) -> str:
+    return final_agent_answer(run_agent_messages(question))
